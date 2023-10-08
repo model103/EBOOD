@@ -1,0 +1,6 @@
+Collecting xdoctest
+  Downloading xdoctest-1.1.1-py3-none-any.whl (137 kB)
+     ------------------------------------ 137.6/137.6 kB 745.1 kB/s eta 0:00:00
+Requirement already satisfied: six in e:\anaconda\envs\open-mmlab\lib\site-packages (from xdoctest) (1.16.0)
+Installing collected packages: xdoctest
+Successfully installed xdoctest-1.1.1

@@ -1,0 +1,1015 @@
+2023-04-20 10:08:01,446 - mmrotate - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.7.13 (default, Mar 29 2022, 02:18:16) [GCC 7.5.0]
+CUDA available: True
+GPU 0: Tesla V100-PCIE-32GB
+CUDA_HOME: /usr/local/cuda-11.6
+NVCC: Cuda compilation tools, release 11.6, V11.6.55
+GCC: gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0
+PyTorch: 1.12.1+cu116
+PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201402
+  - Intel(R) oneAPI Math Kernel Library Version 2021.4-Product Build 20210904 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.6
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.3.2  (built against CUDA 11.5)
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.6, CUDNN_VERSION=8.3.2, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -fabi-version=11 -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.12.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=OFF, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.13.1+cu116
+OpenCV: 4.6.0
+MMCV: 1.6.2
+MMCV Compiler: GCC 9.3
+MMCV CUDA Compiler: 11.6
+MMRotate: 0.3.3+
+------------------------------------------------------------
+
+2023-04-20 10:08:01,928 - mmrotate - INFO - Distributed training: False
+2023-04-20 10:08:02,314 - mmrotate - INFO - Config:
+dataset_type = 'DOTADataset'
+data_root = '/opt/data/private/shen/data/split_ss_dota'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='RResize', img_scale=(1024, 1024)),
+    dict(
+        type='RRandomFlip',
+        flip_ratio=[0.25, 0.25, 0.25],
+        direction=['horizontal', 'vertical', 'diagonal'],
+        version='le90'),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(1024, 1024),
+        flip=False,
+        transforms=[
+            dict(type='RResize'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=2,
+    workers_per_gpu=2,
+    train=dict(
+        type='DOTADataset',
+        ann_file='/opt/data/private/shen/data/split_ss_dota/train/annfiles/',
+        img_prefix='/opt/data/private/shen/data/split_ss_dota/train/images/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='RResize', img_scale=(1024, 1024)),
+            dict(
+                type='RRandomFlip',
+                flip_ratio=[0.25, 0.25, 0.25],
+                direction=['horizontal', 'vertical', 'diagonal'],
+                version='le90'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+        ],
+        version='le90'),
+    val=dict(
+        type='DOTADataset',
+        ann_file='/opt/data/private/shen/data/split_ss_dota/val/annfiles/',
+        img_prefix='/opt/data/private/shen/data/split_ss_dota/val/images/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1024, 1024),
+                flip=False,
+                transforms=[
+                    dict(type='RResize'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        version='le90'),
+    test=dict(
+        type='DOTADataset',
+        ann_file='/opt/data/private/shen/data/split_ss_dota/val/annfiles/',
+        img_prefix='/opt/data/private/shen/data/split_ss_dota/val/images/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1024, 1024),
+                flip=False,
+                transforms=[
+                    dict(type='RResize'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        version='le90'))
+evaluation = dict(interval=1, metric='mAP')
+optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.3333333333333333,
+    step=[8, 11])
+runner = dict(type='EpochBasedRunner', max_epochs=20)
+checkpoint_config = dict(interval=1)
+log_config = dict(interval=100, hooks=[dict(type='TextLoggerHook')])
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '/opt/data/private/shen/mmrotate-0.3.3/checkpoints/oriented_rcnn_r50_fpn_1x_dota_le90-6d2b2ce0.pth'
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+angle_version = 'le90'
+model = dict(
+    type='OrientedRCNN',
+    backbone=dict(
+        type='Diff_ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch',
+        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
+    neck=dict(
+        type='FPN',
+        in_channels=[512, 1024, 2048, 4096],
+        out_channels=256,
+        num_outs=5),
+    rpn_head=dict(
+        type='OrientedRPNHead',
+        in_channels=256,
+        feat_channels=256,
+        version='le90',
+        anchor_generator=dict(
+            type='AnchorGenerator',
+            scales=[8],
+            ratios=[0.5, 1.0, 2.0],
+            strides=[4, 8, 16, 32, 64]),
+        bbox_coder=dict(
+            type='MidpointOffsetCoder',
+            angle_range='le90',
+            target_means=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            target_stds=[1.0, 1.0, 1.0, 1.0, 0.5, 0.5]),
+        loss_cls=dict(
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
+        loss_bbox=dict(
+            type='SmoothL1Loss', beta=0.1111111111111111, loss_weight=1.0)),
+    roi_head=dict(
+        type='OrientedStandardRoIHead',
+        bbox_roi_extractor=dict(
+            type='RotatedSingleRoIExtractor',
+            roi_layer=dict(
+                type='RoIAlignRotated',
+                out_size=7,
+                sample_num=2,
+                clockwise=True),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=dict(
+            reg_decoded_bbox=False,
+            type='RotatedShared2FCBBoxHead',
+            in_channels=256,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_classes=15,
+            bbox_coder=dict(
+                type='DeltaXYWHAOBBoxCoder',
+                angle_range='le90',
+                norm_factor=None,
+                edge_swap=True,
+                proj_xy=True,
+                target_means=(0.0, 0.0, 0.0, 0.0, 0.0),
+                target_stds=(0.1, 0.1, 0.2, 0.2, 0.1)),
+            reg_class_agnostic=True,
+            loss_cls=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+            loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))),
+    train_cfg=dict(
+        rpn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                match_low_quality=True,
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RandomSampler',
+                num=256,
+                pos_fraction=0.5,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=False),
+            allowed_border=0,
+            pos_weight=-1,
+            debug=False),
+        rpn_proposal=dict(
+            nms_pre=2000,
+            max_per_img=2000,
+            nms=dict(type='nms', iou_threshold=0.8),
+            min_bbox_size=0),
+        rcnn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.5,
+                neg_iou_thr=0.5,
+                min_pos_iou=0.5,
+                match_low_quality=False,
+                iou_calculator=dict(type='RBboxOverlaps2D'),
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RRandomSampler',
+                num=512,
+                pos_fraction=0.25,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=True),
+            pos_weight=-1,
+            debug=False)),
+    test_cfg=dict(
+        rpn=dict(
+            nms_pre=2000,
+            max_per_img=2000,
+            nms=dict(type='nms', iou_threshold=0.8),
+            min_bbox_size=0),
+        rcnn=dict(
+            nms_pre=2000,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(iou_thr=0.1),
+            max_per_img=2000)))
+work_dir = '/opt/data/private/shen/mmrotate-0.3.3/work_dir/diff_resnet'
+seed = 518
+gpu_ids = range(0, 1)
+auto_resume = False
+
+2023-04-20 10:08:02,315 - mmrotate - INFO - Set random seed to 280874747, deterministic: False
+2023-04-20 10:08:03,208 - mmrotate - INFO - initialize Diff_ResNet with init_cfg {'type': 'Pretrained', 'checkpoint': 'torchvision://resnet50'}
+2023-04-20 10:08:03,571 - mmrotate - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+2023-04-20 10:08:03,621 - mmrotate - INFO - initialize OrientedRPNHead with init_cfg {'type': 'Normal', 'layer': 'Conv2d', 'std': 0.01}
+2023-04-20 10:08:03,633 - mmrotate - INFO - initialize RotatedShared2FCBBoxHead with init_cfg [{'type': 'Normal', 'std': 0.01, 'override': {'name': 'fc_cls'}}, {'type': 'Normal', 'std': 0.001, 'override': {'name': 'fc_reg'}}, {'type': 'Xavier', 'layer': 'Linear', 'override': [{'name': 'shared_fcs'}, {'name': 'cls_fcs'}, {'name': 'reg_fcs'}]}]
+Name of parameter - Initialization information
+
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+neck.lateral_convs.0.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of OrientedRCNN  
+
+neck.lateral_convs.1.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of OrientedRCNN  
+
+neck.lateral_convs.2.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of OrientedRCNN  
+
+neck.lateral_convs.3.conv.weight - torch.Size([256, 4096, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of OrientedRCNN  
+
+neck.fpn_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of OrientedRCNN  
+
+neck.fpn_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of OrientedRCNN  
+
+neck.fpn_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of OrientedRCNN  
+
+neck.fpn_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of OrientedRCNN  
+
+rpn_head.rpn_conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_conv.bias - torch.Size([256]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_cls.weight - torch.Size([3, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_cls.bias - torch.Size([3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_reg.weight - torch.Size([18, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_reg.bias - torch.Size([18]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+roi_head.bbox_head.fc_cls.weight - torch.Size([16, 1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.fc_cls.bias - torch.Size([16]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+roi_head.bbox_head.fc_reg.weight - torch.Size([5, 1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.fc_reg.bias - torch.Size([5]): 
+NormalInit: mean=0, std=0.001, bias=0 
+
+roi_head.bbox_head.shared_fcs.0.weight - torch.Size([1024, 12544]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.shared_fcs.0.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.shared_fcs.1.weight - torch.Size([1024, 1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.shared_fcs.1.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+2023-04-20 10:08:36,511 - mmrotate - INFO - load checkpoint from local path: /opt/data/private/shen/mmrotate-0.3.3/checkpoints/oriented_rcnn_r50_fpn_1x_dota_le90-6d2b2ce0.pth
+2023-04-20 10:08:37,009 - mmrotate - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for neck.lateral_convs.0.conv.weight: copying a param with shape torch.Size([256, 256, 1, 1]) from checkpoint, the shape in current model is torch.Size([256, 512, 1, 1]).
+size mismatch for neck.lateral_convs.1.conv.weight: copying a param with shape torch.Size([256, 512, 1, 1]) from checkpoint, the shape in current model is torch.Size([256, 1024, 1, 1]).
+size mismatch for neck.lateral_convs.2.conv.weight: copying a param with shape torch.Size([256, 1024, 1, 1]) from checkpoint, the shape in current model is torch.Size([256, 2048, 1, 1]).
+size mismatch for neck.lateral_convs.3.conv.weight: copying a param with shape torch.Size([256, 2048, 1, 1]) from checkpoint, the shape in current model is torch.Size([256, 4096, 1, 1]).
+2023-04-20 10:08:37,018 - mmrotate - INFO - Start running, host: root@interactive58380, work_dir: /opt/data/private/shen/mmrotate-0.3.3/work_dir/diff_resnet
+2023-04-20 10:08:37,018 - mmrotate - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2023-04-20 10:08:37,019 - mmrotate - INFO - workflow: [('train', 1)], max: 20 epochs
+2023-04-20 10:08:37,019 - mmrotate - INFO - Checkpoints will be saved to /opt/data/private/shen/mmrotate-0.3.3/work_dir/diff_resnet by HardDiskBackend.
+2023-04-20 10:09:12,714 - mmrotate - INFO - Epoch [1][100/4867]	lr: 2.327e-03, eta: 9:37:56, time: 0.357, data_time: 0.032, memory: 6148, loss_rpn_cls: 0.1676, loss_rpn_bbox: 0.2467, loss_cls: 0.3875, acc: 91.5723, loss_bbox: 0.2982, loss: 1.1000, grad_norm: 6.3601
+2023-04-20 10:09:43,452 - mmrotate - INFO - Epoch [1][200/4867]	lr: 2.993e-03, eta: 8:57:29, time: 0.307, data_time: 0.007, memory: 6309, loss_rpn_cls: 0.0580, loss_rpn_bbox: 0.1754, loss_cls: 0.2464, acc: 91.9814, loss_bbox: 0.2730, loss: 0.7529, grad_norm: 4.7447
+2023-04-20 10:10:14,228 - mmrotate - INFO - Epoch [1][300/4867]	lr: 3.660e-03, eta: 8:43:52, time: 0.308, data_time: 0.007, memory: 6309, loss_rpn_cls: 0.0531, loss_rpn_bbox: 0.1393, loss_cls: 0.2142, acc: 92.3057, loss_bbox: 0.2236, loss: 0.6302, grad_norm: 4.3528
+2023-04-20 10:10:45,099 - mmrotate - INFO - Epoch [1][400/4867]	lr: 4.327e-03, eta: 8:37:11, time: 0.309, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0564, loss_rpn_bbox: 0.1547, loss_cls: 0.2185, acc: 92.1387, loss_bbox: 0.2084, loss: 0.6380, grad_norm: 4.6032
+2023-04-20 10:11:15,982 - mmrotate - INFO - Epoch [1][500/4867]	lr: 4.993e-03, eta: 8:33:00, time: 0.309, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0510, loss_rpn_bbox: 0.1377, loss_cls: 0.2166, acc: 92.0527, loss_bbox: 0.2183, loss: 0.6235, grad_norm: 4.2810
+2023-04-20 10:11:46,875 - mmrotate - INFO - Epoch [1][600/4867]	lr: 5.000e-03, eta: 8:30:04, time: 0.309, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0488, loss_rpn_bbox: 0.1326, loss_cls: 0.2288, acc: 91.9736, loss_bbox: 0.2066, loss: 0.6168, grad_norm: 4.4605
+2023-04-20 10:12:17,728 - mmrotate - INFO - Epoch [1][700/4867]	lr: 5.000e-03, eta: 8:27:45, time: 0.309, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0476, loss_rpn_bbox: 0.1263, loss_cls: 0.2145, acc: 92.2461, loss_bbox: 0.2025, loss: 0.5909, grad_norm: 4.0840
+2023-04-20 10:12:48,543 - mmrotate - INFO - Epoch [1][800/4867]	lr: 5.000e-03, eta: 8:25:47, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0493, loss_rpn_bbox: 0.1516, loss_cls: 0.2094, acc: 92.2236, loss_bbox: 0.2233, loss: 0.6335, grad_norm: 4.0699
+2023-04-20 10:13:19,316 - mmrotate - INFO - Epoch [1][900/4867]	lr: 5.000e-03, eta: 8:24:05, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0465, loss_rpn_bbox: 0.1374, loss_cls: 0.1758, acc: 93.3594, loss_bbox: 0.1814, loss: 0.5411, grad_norm: 3.5164
+2023-04-20 10:13:50,033 - mmrotate - INFO - Exp name: diff_resnet_dota.py
+2023-04-20 10:13:50,035 - mmrotate - INFO - Epoch [1][1000/4867]	lr: 5.000e-03, eta: 8:22:31, time: 0.307, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0538, loss_rpn_bbox: 0.1162, loss_cls: 0.2009, acc: 92.6260, loss_bbox: 0.1810, loss: 0.5519, grad_norm: 3.8999
+2023-04-20 10:14:20,773 - mmrotate - INFO - Epoch [1][1100/4867]	lr: 5.000e-03, eta: 8:21:11, time: 0.307, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0497, loss_rpn_bbox: 0.1189, loss_cls: 0.2044, acc: 92.4502, loss_bbox: 0.2101, loss: 0.5831, grad_norm: 4.0097
+2023-04-20 10:14:51,586 - mmrotate - INFO - Epoch [1][1200/4867]	lr: 5.000e-03, eta: 8:20:05, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0383, loss_rpn_bbox: 0.1217, loss_cls: 0.2017, acc: 92.4248, loss_bbox: 0.1953, loss: 0.5569, grad_norm: 3.6395
+2023-04-20 10:15:22,261 - mmrotate - INFO - Epoch [1][1300/4867]	lr: 5.000e-03, eta: 8:18:54, time: 0.307, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0428, loss_rpn_bbox: 0.0983, loss_cls: 0.1909, acc: 92.7510, loss_bbox: 0.2032, loss: 0.5352, grad_norm: 3.7200
+2023-04-20 10:15:52,965 - mmrotate - INFO - Epoch [1][1400/4867]	lr: 5.000e-03, eta: 8:17:51, time: 0.307, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0388, loss_rpn_bbox: 0.1055, loss_cls: 0.1917, acc: 92.7500, loss_bbox: 0.1884, loss: 0.5243, grad_norm: 3.4212
+2023-04-20 10:16:23,887 - mmrotate - INFO - Epoch [1][1500/4867]	lr: 5.000e-03, eta: 8:17:06, time: 0.309, data_time: 0.008, memory: 8749, loss_rpn_cls: 0.0388, loss_rpn_bbox: 0.0845, loss_cls: 0.1712, acc: 93.7451, loss_bbox: 0.1529, loss: 0.4474, grad_norm: 3.4204
+2023-04-20 10:16:54,474 - mmrotate - INFO - Epoch [1][1600/4867]	lr: 5.000e-03, eta: 8:16:03, time: 0.306, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0427, loss_rpn_bbox: 0.1009, loss_cls: 0.1820, acc: 93.2832, loss_bbox: 0.1746, loss: 0.5003, grad_norm: 3.6860
+2023-04-20 10:17:25,241 - mmrotate - INFO - Epoch [1][1700/4867]	lr: 5.000e-03, eta: 8:15:14, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0340, loss_rpn_bbox: 0.1086, loss_cls: 0.1851, acc: 93.0508, loss_bbox: 0.1904, loss: 0.5181, grad_norm: 3.4103
+2023-04-20 10:17:56,196 - mmrotate - INFO - Epoch [1][1800/4867]	lr: 5.000e-03, eta: 8:14:37, time: 0.310, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0351, loss_rpn_bbox: 0.1017, loss_cls: 0.1837, acc: 92.9219, loss_bbox: 0.1751, loss: 0.4956, grad_norm: 3.2513
+2023-04-20 10:18:27,022 - mmrotate - INFO - Epoch [1][1900/4867]	lr: 5.000e-03, eta: 8:13:54, time: 0.308, data_time: 0.008, memory: 8749, loss_rpn_cls: 0.0388, loss_rpn_bbox: 0.1067, loss_cls: 0.1843, acc: 92.8652, loss_bbox: 0.1650, loss: 0.4948, grad_norm: 3.6810
+2023-04-20 10:18:57,863 - mmrotate - INFO - Exp name: diff_resnet_dota.py
+2023-04-20 10:18:57,864 - mmrotate - INFO - Epoch [1][2000/4867]	lr: 5.000e-03, eta: 8:13:13, time: 0.308, data_time: 0.008, memory: 8749, loss_rpn_cls: 0.0371, loss_rpn_bbox: 0.0953, loss_cls: 0.1682, acc: 93.4609, loss_bbox: 0.1684, loss: 0.4690, grad_norm: 3.1780
+2023-04-20 10:19:28,666 - mmrotate - INFO - Epoch [1][2100/4867]	lr: 5.000e-03, eta: 8:12:31, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0352, loss_rpn_bbox: 0.1056, loss_cls: 0.1811, acc: 92.8369, loss_bbox: 0.1702, loss: 0.4921, grad_norm: 3.2443
+2023-04-20 10:19:59,635 - mmrotate - INFO - Epoch [1][2200/4867]	lr: 5.000e-03, eta: 8:11:57, time: 0.310, data_time: 0.008, memory: 8749, loss_rpn_cls: 0.0329, loss_rpn_bbox: 0.1068, loss_cls: 0.1831, acc: 93.0146, loss_bbox: 0.1879, loss: 0.5106, grad_norm: 3.4298
+2023-04-20 10:20:30,580 - mmrotate - INFO - Epoch [1][2300/4867]	lr: 5.000e-03, eta: 8:11:23, time: 0.309, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0309, loss_rpn_bbox: 0.1085, loss_cls: 0.1766, acc: 93.3271, loss_bbox: 0.1695, loss: 0.4855, grad_norm: 3.4678
+2023-04-20 10:21:01,382 - mmrotate - INFO - Epoch [1][2400/4867]	lr: 5.000e-03, eta: 8:10:43, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0350, loss_rpn_bbox: 0.1169, loss_cls: 0.1814, acc: 93.1426, loss_bbox: 0.1773, loss: 0.5107, grad_norm: 3.4487
+2023-04-20 10:21:32,290 - mmrotate - INFO - Epoch [1][2500/4867]	lr: 5.000e-03, eta: 8:10:08, time: 0.309, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0337, loss_rpn_bbox: 0.1149, loss_cls: 0.1793, acc: 93.0664, loss_bbox: 0.1831, loss: 0.5111, grad_norm: 3.3398
+2023-04-20 10:22:03,046 - mmrotate - INFO - Epoch [1][2600/4867]	lr: 5.000e-03, eta: 8:09:28, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0332, loss_rpn_bbox: 0.1028, loss_cls: 0.1758, acc: 93.2119, loss_bbox: 0.1666, loss: 0.4784, grad_norm: 3.3476
+2023-04-20 10:22:33,907 - mmrotate - INFO - Epoch [1][2700/4867]	lr: 5.000e-03, eta: 8:08:52, time: 0.309, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0352, loss_rpn_bbox: 0.0942, loss_cls: 0.1858, acc: 92.7607, loss_bbox: 0.1720, loss: 0.4873, grad_norm: 3.4717
+2023-04-20 10:23:04,690 - mmrotate - INFO - Epoch [1][2800/4867]	lr: 5.000e-03, eta: 8:08:14, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0278, loss_rpn_bbox: 0.0928, loss_cls: 0.1747, acc: 93.4287, loss_bbox: 0.1521, loss: 0.4474, grad_norm: 3.3515
+2023-04-20 10:23:35,397 - mmrotate - INFO - Epoch [1][2900/4867]	lr: 5.000e-03, eta: 8:07:34, time: 0.307, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0331, loss_rpn_bbox: 0.0904, loss_cls: 0.1775, acc: 93.1299, loss_bbox: 0.1581, loss: 0.4590, grad_norm: 3.2476
+2023-04-20 10:24:06,202 - mmrotate - INFO - Exp name: diff_resnet_dota.py
+2023-04-20 10:24:06,202 - mmrotate - INFO - Epoch [1][3000/4867]	lr: 5.000e-03, eta: 8:06:57, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0281, loss_rpn_bbox: 0.0898, loss_cls: 0.1523, acc: 94.2627, loss_bbox: 0.1473, loss: 0.4175, grad_norm: 3.0389
+2023-04-20 10:24:37,139 - mmrotate - INFO - Epoch [1][3100/4867]	lr: 5.000e-03, eta: 8:06:25, time: 0.309, data_time: 0.008, memory: 8749, loss_rpn_cls: 0.0309, loss_rpn_bbox: 0.0871, loss_cls: 0.1487, acc: 94.2607, loss_bbox: 0.1512, loss: 0.4179, grad_norm: 2.9645
+2023-04-20 10:25:07,829 - mmrotate - INFO - Epoch [1][3200/4867]	lr: 5.000e-03, eta: 8:05:46, time: 0.307, data_time: 0.008, memory: 8749, loss_rpn_cls: 0.0281, loss_rpn_bbox: 0.0978, loss_cls: 0.1663, acc: 93.5342, loss_bbox: 0.1483, loss: 0.4405, grad_norm: 3.1984
+2023-04-20 10:25:38,698 - mmrotate - INFO - Epoch [1][3300/4867]	lr: 5.000e-03, eta: 8:05:13, time: 0.309, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0310, loss_rpn_bbox: 0.1015, loss_cls: 0.1829, acc: 92.9570, loss_bbox: 0.1752, loss: 0.4907, grad_norm: 3.4135
+2023-04-20 10:26:09,451 - mmrotate - INFO - Epoch [1][3400/4867]	lr: 5.000e-03, eta: 8:04:36, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0232, loss_rpn_bbox: 0.0872, loss_cls: 0.1648, acc: 93.5615, loss_bbox: 0.1628, loss: 0.4380, grad_norm: 2.9587
+2023-04-20 10:26:40,239 - mmrotate - INFO - Epoch [1][3500/4867]	lr: 5.000e-03, eta: 8:04:01, time: 0.308, data_time: 0.008, memory: 8749, loss_rpn_cls: 0.0541, loss_rpn_bbox: 0.1134, loss_cls: 0.1842, acc: 93.0762, loss_bbox: 0.1740, loss: 0.5257, grad_norm: 3.7437
+2023-04-20 10:27:11,050 - mmrotate - INFO - Epoch [1][3600/4867]	lr: 5.000e-03, eta: 8:03:26, time: 0.308, data_time: 0.007, memory: 8749, loss_rpn_cls: 0.0307, loss_rpn_bbox: 0.1089, loss_cls: 0.1887, acc: 92.5977, loss_bbox: 0.1754, loss: 0.5037, grad_norm: 3.2274
+2023-04-20 10:27:41,559 - mmrotate - INFO - Epoch [1][3700/4867]	lr: 5.000e-03, eta: 8:02:44, time: 0.305, data_time: 0.007, memory: 8758, loss_rpn_cls: 0.0219, loss_rpn_bbox: 0.0928, loss_cls: 0.1691, acc: 93.3281, loss_bbox: 0.1658, loss: 0.4495, grad_norm: 3.1922
+2023-04-20 10:28:12,281 - mmrotate - INFO - Epoch [1][3800/4867]	lr: 5.000e-03, eta: 8:02:08, time: 0.307, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0434, loss_rpn_bbox: 0.0891, loss_cls: 0.1741, acc: 93.3701, loss_bbox: 0.1772, loss: 0.4839, grad_norm: 3.6903
+2023-04-20 10:28:42,593 - mmrotate - INFO - Epoch [1][3900/4867]	lr: 5.000e-03, eta: 8:01:22, time: 0.303, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0283, loss_rpn_bbox: 0.0944, loss_cls: 0.1609, acc: 93.7129, loss_bbox: 0.1613, loss: 0.4448, grad_norm: 3.1896
+2023-04-20 10:29:13,472 - mmrotate - INFO - Exp name: diff_resnet_dota.py
+2023-04-20 10:29:13,473 - mmrotate - INFO - Epoch [1][4000/4867]	lr: 5.000e-03, eta: 8:00:51, time: 0.309, data_time: 0.007, memory: 8758, loss_rpn_cls: 0.0306, loss_rpn_bbox: 0.1089, loss_cls: 0.1707, acc: 93.3486, loss_bbox: 0.1669, loss: 0.4771, grad_norm: 3.3485
+2023-04-20 10:29:44,292 - mmrotate - INFO - Epoch [1][4100/4867]	lr: 5.000e-03, eta: 8:00:18, time: 0.308, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0412, loss_rpn_bbox: 0.1183, loss_cls: 0.1809, acc: 92.9248, loss_bbox: 0.1693, loss: 0.5098, grad_norm: 3.4154
+2023-04-20 10:30:14,875 - mmrotate - INFO - Epoch [1][4200/4867]	lr: 5.000e-03, eta: 7:59:40, time: 0.306, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0280, loss_rpn_bbox: 0.0920, loss_cls: 0.1666, acc: 93.8262, loss_bbox: 0.1542, loss: 0.4409, grad_norm: 3.2296
+2023-04-20 10:30:45,569 - mmrotate - INFO - Epoch [1][4300/4867]	lr: 5.000e-03, eta: 7:59:04, time: 0.307, data_time: 0.007, memory: 8758, loss_rpn_cls: 0.0285, loss_rpn_bbox: 0.0852, loss_cls: 0.1421, acc: 94.4531, loss_bbox: 0.1487, loss: 0.4045, grad_norm: 2.9150
+2023-04-20 10:31:16,246 - mmrotate - INFO - Epoch [1][4400/4867]	lr: 5.000e-03, eta: 7:58:29, time: 0.307, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0299, loss_rpn_bbox: 0.0838, loss_cls: 0.1662, acc: 93.6367, loss_bbox: 0.1645, loss: 0.4444, grad_norm: 3.0205
+2023-04-20 10:31:47,046 - mmrotate - INFO - Epoch [1][4500/4867]	lr: 5.000e-03, eta: 7:57:56, time: 0.308, data_time: 0.007, memory: 8758, loss_rpn_cls: 0.0243, loss_rpn_bbox: 0.0768, loss_cls: 0.1515, acc: 94.0723, loss_bbox: 0.1529, loss: 0.4055, grad_norm: 2.8239
+2023-04-20 10:32:17,875 - mmrotate - INFO - Epoch [1][4600/4867]	lr: 5.000e-03, eta: 7:57:24, time: 0.308, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0320, loss_rpn_bbox: 0.0953, loss_cls: 0.1605, acc: 93.6504, loss_bbox: 0.1548, loss: 0.4424, grad_norm: 3.0347
+2023-04-20 10:32:48,408 - mmrotate - INFO - Epoch [1][4700/4867]	lr: 5.000e-03, eta: 7:56:46, time: 0.305, data_time: 0.007, memory: 8758, loss_rpn_cls: 0.0255, loss_rpn_bbox: 0.0863, loss_cls: 0.1525, acc: 93.8926, loss_bbox: 0.1536, loss: 0.4180, grad_norm: 3.1152
+2023-04-20 10:33:19,155 - mmrotate - INFO - Epoch [1][4800/4867]	lr: 5.000e-03, eta: 7:56:12, time: 0.307, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0264, loss_rpn_bbox: 0.0907, loss_cls: 0.1695, acc: 93.4434, loss_bbox: 0.1658, loss: 0.4524, grad_norm: 3.3195
+2023-04-20 10:33:39,961 - mmrotate - INFO - Saving checkpoint at 1 epochs
+2023-04-20 10:37:31,126 - mmrotate - INFO - 
++--------------------+-------+-------+--------+-------+
+| class              | gts   | dets  | recall | ap    |
++--------------------+-------+-------+--------+-------+
+| plane              | 4449  | 16490 | 0.929  | 0.879 |
+| baseball-diamond   | 358   | 1162  | 0.841  | 0.712 |
+| bridge             | 783   | 5806  | 0.653  | 0.441 |
+| ground-track-field | 212   | 1842  | 0.877  | 0.676 |
+| small-vehicle      | 10579 | 29664 | 0.752  | 0.598 |
+| large-vehicle      | 8819  | 24197 | 0.919  | 0.803 |
+| ship               | 18537 | 23106 | 0.893  | 0.798 |
+| tennis-court       | 1512  | 3083  | 0.948  | 0.906 |
+| basketball-court   | 266   | 2195  | 0.921  | 0.780 |
+| storage-tank       | 4740  | 5941  | 0.656  | 0.601 |
+| soccer-ball-field  | 251   | 1722  | 0.713  | 0.522 |
+| roundabout         | 275   | 2619  | 0.778  | 0.596 |
+| harbor             | 4167  | 8147  | 0.727  | 0.618 |
+| swimming-pool      | 732   | 1043  | 0.675  | 0.510 |
+| helicopter         | 122   | 7200  | 0.713  | 0.195 |
++--------------------+-------+-------+--------+-------+
+| mAP                |       |       |        | 0.642 |
++--------------------+-------+-------+--------+-------+
+2023-04-20 10:37:31,128 - mmrotate - INFO - Exp name: diff_resnet_dota.py
+2023-04-20 10:37:31,128 - mmrotate - INFO - Epoch(val) [1][3066]	mAP: 0.6423
+2023-04-20 10:38:04,436 - mmrotate - INFO - Epoch [2][100/4867]	lr: 5.000e-03, eta: 7:49:41, time: 0.333, data_time: 0.031, memory: 8758, loss_rpn_cls: 0.0247, loss_rpn_bbox: 0.0888, loss_cls: 0.1847, acc: 92.9199, loss_bbox: 0.1586, loss: 0.4567, grad_norm: 3.3575
+2023-04-20 10:38:35,168 - mmrotate - INFO - Epoch [2][200/4867]	lr: 5.000e-03, eta: 7:49:15, time: 0.307, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0218, loss_rpn_bbox: 0.0915, loss_cls: 0.1712, acc: 93.4131, loss_bbox: 0.1689, loss: 0.4534, grad_norm: 3.0340
+2023-04-20 10:39:05,844 - mmrotate - INFO - Epoch [2][300/4867]	lr: 5.000e-03, eta: 7:48:47, time: 0.307, data_time: 0.007, memory: 8758, loss_rpn_cls: 0.0214, loss_rpn_bbox: 0.0958, loss_cls: 0.1563, acc: 93.9707, loss_bbox: 0.1617, loss: 0.4351, grad_norm: 2.8940
+2023-04-20 10:39:36,557 - mmrotate - INFO - Epoch [2][400/4867]	lr: 5.000e-03, eta: 7:48:20, time: 0.307, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0267, loss_rpn_bbox: 0.0965, loss_cls: 0.1470, acc: 94.1641, loss_bbox: 0.1449, loss: 0.4151, grad_norm: 3.0685
+2023-04-20 10:40:07,232 - mmrotate - INFO - Epoch [2][500/4867]	lr: 5.000e-03, eta: 7:47:52, time: 0.307, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0233, loss_rpn_bbox: 0.0929, loss_cls: 0.1568, acc: 93.9902, loss_bbox: 0.1517, loss: 0.4247, grad_norm: 2.9683
+2023-04-20 10:40:38,317 - mmrotate - INFO - Epoch [2][600/4867]	lr: 5.000e-03, eta: 7:47:31, time: 0.311, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0272, loss_rpn_bbox: 0.0915, loss_cls: 0.1680, acc: 93.4727, loss_bbox: 0.1739, loss: 0.4607, grad_norm: 3.0643
+2023-04-20 10:41:08,892 - mmrotate - INFO - Epoch [2][700/4867]	lr: 5.000e-03, eta: 7:47:01, time: 0.306, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0214, loss_rpn_bbox: 0.0913, loss_cls: 0.1422, acc: 94.5381, loss_bbox: 0.1434, loss: 0.3983, grad_norm: 2.9588
+2023-04-20 10:41:39,612 - mmrotate - INFO - Epoch [2][800/4867]	lr: 5.000e-03, eta: 7:46:34, time: 0.307, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0264, loss_rpn_bbox: 0.0821, loss_cls: 0.1595, acc: 93.6865, loss_bbox: 0.1575, loss: 0.4254, grad_norm: 3.2011
+2023-04-20 10:42:10,250 - mmrotate - INFO - Epoch [2][900/4867]	lr: 5.000e-03, eta: 7:46:05, time: 0.306, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0281, loss_rpn_bbox: 0.0834, loss_cls: 0.1634, acc: 93.6221, loss_bbox: 0.1613, loss: 0.4361, grad_norm: 3.4234
+2023-04-20 10:42:41,123 - mmrotate - INFO - Epoch [2][1000/4867]	lr: 5.000e-03, eta: 7:45:39, time: 0.309, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0287, loss_rpn_bbox: 0.1067, loss_cls: 0.1753, acc: 93.2070, loss_bbox: 0.1675, loss: 0.4782, grad_norm: 3.1726
+2023-04-20 10:43:11,816 - mmrotate - INFO - Epoch [2][1100/4867]	lr: 5.000e-03, eta: 7:45:11, time: 0.307, data_time: 0.008, memory: 8758, loss_rpn_cls: 0.0255, loss_rpn_bbox: 0.0891, loss_cls: 0.1814, acc: 93.0166, loss_bbox: 0.1648, loss: 0.4609, grad_norm: 3.1660
+2023-04-20 10:43:42,596 - mmrotate - INFO - Epoch [2][1200/4867]	lr: 5.000e-03, eta: 7:44:44, time: 0.308, data_time: 0.008, memory: 8764, loss_rpn_cls: 0.0327, loss_rpn_bbox: 0.0980, loss_cls: 0.1645, acc: 93.3799, loss_bbox: 0.1545, loss: 0.4498, grad_norm: 3.2452
+2023-04-20 10:44:13,450 - mmrotate - INFO - Epoch [2][1300/4867]	lr: 5.000e-03, eta: 7:44:18, time: 0.309, data_time: 0.008, memory: 8764, loss_rpn_cls: 0.0306, loss_rpn_bbox: 0.0852, loss_cls: 0.1597, acc: 93.9551, loss_bbox: 0.1588, loss: 0.4343, grad_norm: 3.2519
+2023-04-20 10:44:44,148 - mmrotate - INFO - Epoch [2][1400/4867]	lr: 5.000e-03, eta: 7:43:49, time: 0.307, data_time: 0.008, memory: 8764, loss_rpn_cls: 0.0236, loss_rpn_bbox: 0.0841, loss_cls: 0.1850, acc: 92.9766, loss_bbox: 0.1644, loss: 0.4571, grad_norm: 3.3080
+2023-04-20 10:45:14,877 - mmrotate - INFO - Epoch [2][1500/4867]	lr: 5.000e-03, eta: 7:43:21, time: 0.307, data_time: 0.008, memory: 8764, loss_rpn_cls: 0.0311, loss_rpn_bbox: 0.1085, loss_cls: 0.1617, acc: 93.7578, loss_bbox: 0.1534, loss: 0.4547, grad_norm: 3.5064
+2023-04-20 10:45:45,526 - mmrotate - INFO - Epoch [2][1600/4867]	lr: 5.000e-03, eta: 7:42:52, time: 0.306, data_time: 0.008, memory: 8764, loss_rpn_cls: 0.0313, loss_rpn_bbox: 0.1048, loss_cls: 0.1594, acc: 93.6426, loss_bbox: 0.1559, loss: 0.4513, grad_norm: 3.1777
+2023-04-20 10:46:16,562 - mmrotate - INFO - Epoch [2][1700/4867]	lr: 5.000e-03, eta: 7:42:28, time: 0.310, data_time: 0.008, memory: 8764, loss_rpn_cls: 0.0302, loss_rpn_bbox: 0.1167, loss_cls: 0.1720, acc: 93.0859, loss_bbox: 0.1634, loss: 0.4822, grad_norm: 3.2051
+2023-04-20 10:46:47,257 - mmrotate - INFO - Epoch [2][1800/4867]	lr: 5.000e-03, eta: 7:41:59, time: 0.307, data_time: 0.008, memory: 8764, loss_rpn_cls: 0.0253, loss_rpn_bbox: 0.1093, loss_cls: 0.1706, acc: 93.0703, loss_bbox: 0.1658, loss: 0.4711, grad_norm: 3.1647
+2023-04-20 10:47:18,111 - mmrotate - INFO - Epoch [2][1900/4867]	lr: 5.000e-03, eta: 7:41:32, time: 0.309, data_time: 0.008, memory: 8764, loss_rpn_cls: 0.0240, loss_rpn_bbox: 0.0909, loss_cls: 0.1617, acc: 93.5518, loss_bbox: 0.1528, loss: 0.4293, grad_norm: 2.9265

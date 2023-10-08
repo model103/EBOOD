@@ -1,0 +1,4 @@
+checkpoints/
+work_dir/grad_fpn/checkpoints_grad_fpn_2/
+work_dir/开题报告算法演示/
+demo/oriented_rcnn_r50_fpn_1x_dota_le90-6d2b2ce0.pth
