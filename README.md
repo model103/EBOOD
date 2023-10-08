@@ -1,6 +1,6 @@
 [Edge Based Oriented Object Detection](https://arxiv.org/abs/2309.08265)
 
-This is the code implementation of this paper
+This is the code implementation of this paper by modifying mmrotated.
 
 env:
 *  cuda : 11.6.0
