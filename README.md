@@ -1,4 +1,4 @@
-[Edge Based Oriented Object Detection] (https://arxiv.org/abs/2309.08265)
+[Edge Based Oriented Object Detection](https://arxiv.org/abs/2309.08265)
 
 This is the code implementation of this paper
 
